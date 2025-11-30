@@ -1,18 +1,21 @@
-# 🔐 Secret Number Board
+# 🔐 Secret Message Board
 
-> **Privacy-Preserving On-Chain Number Message Board** - Decentralized encrypted messaging system based on FHEVM v0.9
+> **Privacy-Preserving Encrypted Message Board** - Decentralized encrypted messaging system based on FHEVM v0.9
 
-A privacy-preserving on-chain number message board that uses Zama FHEVM fully homomorphic encryption technology, allowing you to encrypt and store secret numbers on the blockchain that only you can decrypt and view.
+A privacy-preserving encrypted message board that uses Zama FHEVM fully homomorphic encryption technology. Users can encrypt and store secret messages on the blockchain that only they can decrypt and view.
+
+**Current Demo**: This implementation uses numbers (uint32) as messages to demonstrate the core FHE encryption/decryption flow. The architecture can be easily extended to support text messages, files, or other data types.
 
 ---
 
 ## 🌟 Core Features
 
-- 🔒 **End-to-End Encryption** - Numbers are encrypted on the frontend, remain encrypted on-chain
-- 🛡️ **Privacy Protection** - Only you can decrypt and view your secret number
+- 🔒 **End-to-End Encryption** - Messages are encrypted on the frontend, remain encrypted on-chain
+- 🛡️ **Privacy Protection** - Only you can decrypt and view your secret messages
 - ⚡ **Decentralized** - Based on Ethereum Sepolia testnet, no need to trust centralized services
 - 🎨 **Modern UI** - Clean and elegant user interface with smooth interactions
 - 🌙 **Dark Theme** - Support for dark mode to protect your eyes
+- 📦 **Extensible Architecture** - Easy to extend to support text, images, or other data types
 
 ---
 
@@ -24,7 +27,7 @@ This project uses **Fully Homomorphic Encryption (FHE)** technology provided by 
 ```solidity
 import {FHE, euint32, externalEuint32} from "@fhevm/solidity/lib/FHE.sol";
 
-// Store encrypted numbers (euint32 type)
+// Store encrypted messages (euint32 type - can be extended to other types)
 mapping(address => euint32) public userMessages;
 
 // Accept encrypted input from frontend
@@ -44,7 +47,7 @@ function submitMessage(externalEuint32 encryptedValue, bytes calldata proof) ext
 ```typescript
 // Create encrypted input
 const input = fhevmInstance.createEncryptedInput(CONTRACT_ADDRESS, address);
-input.add32(value);  // Encrypt uint32 number
+input.add32(value);  // Encrypt uint32 message (can use addBytes for text)
 const encryptedInput = await input.encrypt();
 ```
 
@@ -64,11 +67,12 @@ const decryptedResults = await fhevmInstance.userDecrypt(
 ```
 
 **Key Points:**
-- ✅ Numbers are **encrypted on the frontend** before being sent to the blockchain
+- ✅ Messages are **encrypted on the frontend** before being sent to the blockchain
 - ✅ **On-chain data remains encrypted** at all times (euint32 type)
 - ✅ Smart contract **cannot see the plaintext**, only processes encrypted data
 - ✅ Only the owner **can decrypt** (requires private key signature authorization)
 - ✅ Uses Zama's **KMS and Relayer infrastructure** for secure key management
+- 🔄 **Extensible**: Can be extended to support `euint64`, `ebytes256`, or other encrypted types for text/files
 
 ---
 
@@ -79,6 +83,7 @@ const decryptedResults = await fhevmInstance.userDecrypt(
 - **Contract**: `SecretMessageBoard.sol`
 - **Network**: Ethereum Sepolia Testnet
 - **Encryption Type**: `euint32` (supports 0 to 4,294,967,295)
+- **Extensibility**: Can be extended to support `ebytes256` for text messages
 
 ### Frontend
 - **Framework**: Next.js 15 + React 19
@@ -102,8 +107,8 @@ const decryptedResults = await fhevmInstance.userDecrypt(
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/secret-number-board.git
-cd secret-number-board
+git clone https://github.com/huazizi00-sudo/secret-message-board.git
+cd secret-message-board
 
 # Install Hardhat dependencies
 cd packages/hardhat
@@ -177,11 +182,13 @@ pnpm dev
 - Select MetaMask or another wallet
 - Make sure you're on Sepolia testnet
 
-### 2. Submit Secret Number
-- Enter an integer between 0 and 4,294,967,295 in the input box
+### 2. Submit Secret Message
+- Enter a number (0 to 4,294,967,295) in the input box
 - Click "🔒 Submit Secret Number"
 - Confirm the transaction
 - Wait for transaction confirmation (~15-30 seconds)
+
+**Note**: Current demo uses numbers. To extend to text messages, replace `euint32` with `ebytes256` in the contract and use `input.addBytes()` in frontend.
 
 ### 3. Wait for Permission Sync
 - After successful submission, a 30-second countdown will appear
@@ -192,21 +199,21 @@ pnpm dev
 - After the countdown ends, click "🔓 Decrypt & View Message"
 - Sign the authorization in your wallet (EIP-712)
 - Wait for decryption to complete (~30-60 seconds)
-- View your secret number
+- View your secret message
 
 ### 5. Resubmit
 - After successful decryption, you can click "✏️ Submit Again"
-- Submitting a new number will overwrite the old data
+- Submitting a new message will overwrite the old data
 
 ---
 
 ## 🔒 Privacy & Security
 
 ### Privacy Guarantees
-- ✅ Numbers are encrypted using FHEVM on the frontend, plaintext never goes on-chain
+- ✅ Messages are encrypted using FHEVM on the frontend, plaintext never goes on-chain
 - ✅ On-chain data remains encrypted at all times
 - ✅ Only the user can decrypt (requires private key signature)
-- ✅ The contract cannot see the plaintext numbers
+- ✅ The contract cannot see the plaintext messages
 - ✅ Other users cannot decrypt your data
 
 ### Access Control
@@ -217,17 +224,40 @@ FHE.allow(value, msg.sender); // User can decrypt
 ```
 
 ### Known Limitations
-- Each address can only store one number (can be overwritten)
-- Number range: 0 - 4,294,967,295 (uint32)
+- Each address can only store one message (can be overwritten)
+- Current demo: Number range 0 - 4,294,967,295 (uint32)
 - Decryption requires waiting for permission sync (30 seconds)
 - Decryption process is slow (30-60 seconds)
+
+---
+
+## 🔄 Extending to Text Messages
+
+To extend this demo to support text messages:
+
+1. **Contract**: Change `euint32` to `ebytes256`
+```solidity
+mapping(address => ebytes256) public userMessages;
+```
+
+2. **Frontend Encryption**: Use `addBytes` instead of `add32`
+```typescript
+const input = fhevmInstance.createEncryptedInput(CONTRACT_ADDRESS, address);
+input.addBytes256(textBytes);  // For text messages
+```
+
+3. **Frontend Decryption**: Decode bytes to text
+```typescript
+const decryptedBytes = decryptedResults[encryptedHandle];
+const text = new TextDecoder().decode(decryptedBytes);
+```
 
 ---
 
 ## 📁 Project Structure
 
 ```
-secret-number-board/
+secret-message-board/
 ├── packages/
 │   ├── hardhat/                    # Smart contracts
 │   │   ├── contracts/
@@ -387,6 +417,7 @@ This project participates in the [Zama Developer Program](https://www.zama.ai/),
 - ✅ User-side decryption (userDecrypt)
 - ✅ Modern user interface
 - ✅ Complete documentation and comments
+- ✅ Extensible architecture for various data types
 
 ---
 
@@ -413,4 +444,4 @@ If you have questions or suggestions, feel free to:
 
 ---
 
-**🎉 Start building your privacy application now!**
+**🎉 Start building your privacy-preserving encrypted message board now!**
