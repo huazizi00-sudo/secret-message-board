@@ -5,36 +5,12 @@ import { getDefaultConfig, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
 import { sepolia } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
-import { 
-  metaMaskWallet, 
-  rainbowWallet, 
-  walletConnectWallet,
-} from '@rainbow-me/rainbowkit/wallets';
-import { connectorsForWallets } from '@rainbow-me/rainbowkit';
-
-const connectors = connectorsForWallets(
-  [
-    {
-      groupName: 'Recommended',
-      wallets: [
-        metaMaskWallet,
-        rainbowWallet,
-        walletConnectWallet,
-      ],
-    },
-  ],
-  {
-    appName: 'Secret Number Board',
-    projectId: 'YOUR_WALLETCONNECT_PROJECT_ID',
-  }
-);
 
 const config = getDefaultConfig({
-  appName: 'Secret Number Board',
+  appName: 'Secret Message Board',
   projectId: 'YOUR_WALLETCONNECT_PROJECT_ID',
   chains: [sepolia],
   ssr: false,
-  connectors,
 });
 
 const queryClient = new QueryClient();
