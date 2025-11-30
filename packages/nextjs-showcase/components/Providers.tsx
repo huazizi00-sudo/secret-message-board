@@ -34,7 +34,6 @@ const config = getDefaultConfig({
   projectId: 'YOUR_WALLETCONNECT_PROJECT_ID',
   chains: [sepolia],
   ssr: false,
-  autoConnect: false, // 避免多钱包冲突
   connectors,
 });
 
