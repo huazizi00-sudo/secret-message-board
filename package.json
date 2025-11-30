@@ -1,0 +1,28 @@
+{
+  "name": "secret-number-board",
+  "version": "1.0.0",
+  "description": "Privacy-Preserving Message Board powered by FHEVM v0.9",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm --filter nextjs-showcase dev",
+    "build": "pnpm --filter nextjs-showcase build",
+    "hardhat:compile": "pnpm --filter secret-message-board-hardhat compile",
+    "hardhat:deploy": "pnpm --filter secret-message-board-hardhat deploy",
+    "hardhat:test": "pnpm --filter secret-message-board-hardhat test"
+  },
+  "keywords": [
+    "fhevm",
+    "zama",
+    "privacy",
+    "encryption",
+    "ethereum",
+    "nextjs",
+    "web3"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
+

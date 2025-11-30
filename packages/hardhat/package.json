@@ -1,0 +1,25 @@
+{
+  "name": "secret-message-board-hardhat",
+  "version": "1.0.0",
+  "description": "Secret Number Board - Smart Contracts",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy": "hardhat deploy --network sepolia",
+    "deploy:local": "hardhat deploy --network localhost"
+  },
+  "dependencies": {
+    "@fhevm/solidity": "0.9.1",
+    "@fhevm/host-contracts": "^0.9.0",
+    "encrypted-types": "^0.0.4",
+    "ethers": "^6.0.0"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@types/node": "^20.0.0",
+    "hardhat": "^2.19.0",
+    "hardhat-deploy": "^0.12.0",
+    "typescript": "^5.0.0"
+  }
+}
+
