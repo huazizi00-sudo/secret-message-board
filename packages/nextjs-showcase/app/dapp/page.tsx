@@ -54,57 +54,65 @@ export default function DAppPage() {
   const [decryptedValue, setDecryptedValue] = useState<string | null>(null);
   const [decryptError, setDecryptError] = useState<string | null>(null);
   
-  // ==================== FHEVM Initialization ====================
-  useEffect(() => {
-    if (!isConnected || !address || !walletClient || isInitializingRef.current || fhevmInstance) {
-      return;
+  // ==================== FHEVM Initialization (Lazy) ====================
+  const initFhevm = async () => {
+    if (isInitializingRef.current || fhevmInstance) {
+      return fhevmInstance;
     }
 
-    const initFhevm = async () => {
-      isInitializingRef.current = true;
-      setIsInitializing(true);
-      setInitError(null);
+    isInitializingRef.current = true;
+    setIsInitializing(true);
+    setInitError(null);
 
-      try {
-        // Wait for relayerSDK to load
-        if (!(window as any).relayerSDK) {
-          throw new Error('Relayer SDK not loaded');
-        }
-
-        // Initialize SDK (required!)
-        await (window as any).relayerSDK.initSDK();
-        console.log('✅ SDK initialized successfully');
-
-        // Get provider
-        let provider = getWalletProvider();
-        
-        if (!provider) {
-          throw new Error('Wallet provider not found');
-        }
-
-        // Create FHEVM instance
-        const instance = await (window as any).relayerSDK.createInstance({
-          ...FHEVM_CONFIG,
-          network: provider,
-        });
-
-        setFhevmInstance(instance);
-        console.log('✅ FHEVM initialized successfully');
-      } catch (e: any) {
-        setInitError(e.message);
-        console.error('❌ FHEVM initialization failed:', e);
-        isInitializingRef.current = false;
-      } finally {
-        setIsInitializing(false);
+    try {
+      // Wait for relayerSDK to load
+      if (!(window as any).relayerSDK) {
+        throw new Error('Relayer SDK not loaded');
       }
-    };
 
-    initFhevm();
-  }, [isConnected, address, walletClient, fhevmInstance]);
+      // Initialize SDK (required!)
+      await (window as any).relayerSDK.initSDK();
+      console.log('✅ SDK initialized successfully');
+
+      // Get provider
+      let provider = getWalletProvider();
+      
+      if (!provider) {
+        throw new Error('Wallet provider not found');
+      }
+
+      // Create FHEVM instance
+      const instance = await (window as any).relayerSDK.createInstance({
+        ...FHEVM_CONFIG,
+        network: provider,
+      });
+
+      setFhevmInstance(instance);
+      console.log('✅ FHEVM initialized successfully');
+      return instance;
+    } catch (e: any) {
+      setInitError(e.message);
+      console.error('❌ FHEVM initialization failed:', e);
+      isInitializingRef.current = false;
+      throw e;
+    } finally {
+      setIsInitializing(false);
+    }
+  };
 
   // ==================== Submit Secret Number ====================
   const handleSubmit = async () => {
-    if (!fhevmInstance || !walletClient || !address) return;
+    if (!walletClient || !address) return;
+    
+    // Initialize FHEVM if not already done
+    let instance = fhevmInstance;
+    if (!instance) {
+      try {
+        instance = await initFhevm();
+      } catch (e) {
+        return; // Error already handled in initFhevm
+      }
+    }
     
     const value = parseInt(inputValue);
     if (isNaN(value) || value < 0 || value > 4294967295) {
@@ -118,7 +126,7 @@ export default function DAppPage() {
     try {
       // 1. Encrypt input
       console.log('🔒 Encrypting number:', value);
-      const input = fhevmInstance.createEncryptedInput(CONTRACT_ADDRESS, address);
+      const input = instance.createEncryptedInput(CONTRACT_ADDRESS, address);
       input.add32(value);
       const encryptedInput = await input.encrypt();
       
@@ -151,7 +159,17 @@ export default function DAppPage() {
   
   // ==================== Decrypt and View Message ====================
   const handleDecrypt = async () => {
-    if (!fhevmInstance || !walletClient || !address) return;
+    if (!walletClient || !address) return;
+    
+    // Initialize FHEVM if not already done
+    let instance = fhevmInstance;
+    if (!instance) {
+      try {
+        instance = await initFhevm();
+      } catch (e) {
+        return; // Error already handled in initFhevm
+      }
+    }
     
     setIsDecrypting(true);
     setDecryptError(null);
@@ -168,7 +186,7 @@ export default function DAppPage() {
       console.log('Handle:', encryptedHandle);
       
       // 3. Generate keypair
-      const keypair = fhevmInstance.generateKeypair();
+      const keypair = instance.generateKeypair();
       
       // 4. Prepare decryption parameters
       const handleContractPairs = [
@@ -179,7 +197,7 @@ export default function DAppPage() {
       const contractAddresses = [CONTRACT_ADDRESS];
       
       // 5. Create EIP-712 signature message
-      const eip712 = fhevmInstance.createEIP712(
+      const eip712 = instance.createEIP712(
         keypair.publicKey,
         contractAddresses,
         startTimeStamp,
@@ -200,7 +218,7 @@ export default function DAppPage() {
       
       // 7. Call userDecrypt to decrypt
       console.log('🔓 Decrypting (may take 30-60 seconds)...');
-      const decryptedResults = await fhevmInstance.userDecrypt(
+      const decryptedResults = await instance.userDecrypt(
         handleContractPairs,
         keypair.privateKey,
         keypair.publicKey,
@@ -243,37 +261,8 @@ export default function DAppPage() {
         <div className="text-center space-y-6">
           <div className="text-6xl mb-4">🔐</div>
           <h1 className="text-3xl font-bold text-white mb-2">Secret Number Board</h1>
-          <p className="text-gray-300 mb-8">Please connect your wallet to continue</p>
+          <p className="text-gray-300 mb-8">请连接钱包以继续</p>
           <ConnectButton />
-        </div>
-      </div>
-    );
-  }
-
-  if (isInitializing) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-500 mx-auto mb-4"></div>
-          <p className="text-white text-lg">Initializing FHEVM...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (initError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900">
-        <div className="text-center max-w-md">
-          <div className="text-red-500 text-5xl mb-4">❌</div>
-          <h2 className="text-2xl font-bold text-white mb-2">Initialization Failed</h2>
-          <p className="text-gray-300 text-sm">{initError}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-6 px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
-          >
-            Reload Page
-          </button>
         </div>
       </div>
     );
@@ -326,16 +315,21 @@ export default function DAppPage() {
               
               <button
                 onClick={handleSubmit}
-                disabled={isSubmitting || !inputValue}
+                disabled={isSubmitting || isInitializing || !inputValue}
                 className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
-                {isSubmitting ? (
+                {isInitializing ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    Submitting...
+                    初始化中...
+                  </span>
+                ) : isSubmitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    提交中...
                   </span>
                 ) : (
-                  '🔒 Submit Secret Number'
+                  '🔒 提交秘密数字'
                 )}
               </button>
             </div>
@@ -358,16 +352,21 @@ export default function DAppPage() {
               
               <button
                 onClick={handleDecrypt}
-                disabled={isDecrypting}
+                disabled={isDecrypting || isInitializing}
                 className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
-                {isDecrypting ? (
+                {isInitializing ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    Decrypting (30-60 seconds)...
+                    初始化中...
+                  </span>
+                ) : isDecrypting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    解密中（30-60 秒）...
                   </span>
                 ) : (
-                  '🔓 Decrypt & View Message'
+                  '🔓 解密查看留言'
                 )}
               </button>
             </div>
