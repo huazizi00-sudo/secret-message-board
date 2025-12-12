@@ -74,8 +74,8 @@ export default function DAppPage() {
       await (window as any).relayerSDK.initSDK();
       console.log('✅ SDK initialized successfully');
 
-      // Get provider
-      let provider = getWalletProvider();
+      // Get provider from walletClient
+      let provider = walletClient;
       
       if (!provider) {
         throw new Error('Wallet provider not found');
@@ -261,7 +261,7 @@ export default function DAppPage() {
         <div className="text-center space-y-6">
           <div className="text-6xl mb-4">🔐</div>
           <h1 className="text-3xl font-bold text-white mb-2">Secret Number Board</h1>
-          <p className="text-gray-300 mb-8">请连接钱包以继续</p>
+          <p className="text-gray-300 mb-8">Please connect your wallet to continue</p>
           <ConnectButton />
         </div>
       </div>
@@ -321,15 +321,15 @@ export default function DAppPage() {
                 {isInitializing ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    初始化中...
+                    Initializing...
                   </span>
                 ) : isSubmitting ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    提交中...
+                    Submitting...
                   </span>
                 ) : (
-                  '🔒 提交秘密数字'
+                  '🔒 Submit Secret Number'
                 )}
               </button>
             </div>
@@ -358,15 +358,15 @@ export default function DAppPage() {
                 {isInitializing ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    初始化中...
+                    Initializing...
                   </span>
                 ) : isDecrypting ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    解密中（30-60 秒）...
+                    Decrypting (30-60s)...
                   </span>
                 ) : (
-                  '🔓 解密查看留言'
+                  '🔓 Decrypt & View Message'
                 )}
               </button>
             </div>
