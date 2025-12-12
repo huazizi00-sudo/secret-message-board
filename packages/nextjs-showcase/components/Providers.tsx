@@ -7,8 +7,8 @@ import { sepolia } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 
 const config = getDefaultConfig({
-  appName: 'Secret Message Board',
-  projectId: 'YOUR_WALLETCONNECT_PROJECT_ID',
+  appName: 'Secret Number Board',
+  projectId: '0000000000000000000000000000000000000000000000000000000000000000',
   chains: [sepolia],
   ssr: false,
 });
