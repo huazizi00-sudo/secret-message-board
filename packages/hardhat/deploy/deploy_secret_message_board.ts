@@ -28,3 +28,4 @@ export default deploySecretMessageBoard;
 // 标签用于选择性部署
 deploySecretMessageBoard.tags = ["SecretMessageBoard"];
 
+

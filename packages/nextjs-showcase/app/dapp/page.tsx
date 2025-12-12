@@ -7,7 +7,7 @@ import { ethers, BrowserProvider } from 'ethers';
 import { getWalletProvider } from '@/utils/wallet';
 
 // Contract configuration
-const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || '0x0000000000000000000000000000000000000000';
+const CONTRACT_ADDRESS = '0x9c5f39ca7544a021d7C106c3F0d6518bF0c7bF9B';
 
 const CONTRACT_ABI = [
   "function submitMessage(bytes32 encryptedValue, bytes proof) external",
@@ -138,18 +138,8 @@ export default function DAppPage() {
       console.log('✅ Submitted successfully!');
       setHasSubmitted(true);
       
-      // 3. Start 30 second countdown
-      setCountdown(30);
-      const timer = setInterval(() => {
-        setCountdown(prev => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            setCanDecrypt(true);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+      // 3. Allow decryption immediately
+      setCanDecrypt(true);
       
     } catch (e: any) {
       console.error('❌ Submission failed:', e);
@@ -351,22 +341,7 @@ export default function DAppPage() {
             </div>
           )}
           
-          {/* State 2: Submitted - Countdown */}
-          {hasSubmitted && countdown > 0 && (
-            <div className="text-center space-y-6">
-              <div className="text-6xl mb-4">✅</div>
-              <h2 className="text-2xl font-bold text-white">Submitted Successfully!</h2>
-              <div className="p-4 bg-yellow-500/20 border border-yellow-500/50 rounded-lg">
-                <p className="text-yellow-200 text-sm mb-2">⏳ Syncing permissions...</p>
-                <p className="text-yellow-100 text-3xl font-bold">{countdown} seconds</p>
-              </div>
-              <p className="text-gray-300 text-sm">
-                You can decrypt and view your secret number after permissions are synced
-              </p>
-            </div>
-          )}
-          
-          {/* State 3: Can decrypt */}
+          {/* State 2: Can decrypt */}
           {canDecrypt && decryptedValue === null && (
             <div className="text-center space-y-6">
               <div className="text-6xl mb-4">🎉</div>
