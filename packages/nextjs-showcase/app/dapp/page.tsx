@@ -281,6 +281,23 @@ export default function DAppPage() {
         </div>
       </div>
       
+      {/* Wallet Compatibility Notice */}
+      <div className="max-w-2xl mx-auto mb-6">
+        <div className="bg-amber-500/20 border border-amber-500/50 rounded-xl p-4">
+          <div className="flex items-start gap-3">
+            <div className="text-amber-400 text-xl flex-shrink-0 mt-0.5">⚠️</div>
+            <div>
+              <p className="text-amber-100 text-sm font-medium mb-1">
+                Wallet Compatibility Notice
+              </p>
+              <p className="text-amber-200/90 text-xs leading-relaxed">
+                Please use <strong>MetaMask</strong> for testing. OKX Wallet may have signing compatibility issues with FHEVM.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       {/* Main Content */}
       <div className="max-w-2xl mx-auto">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8">
